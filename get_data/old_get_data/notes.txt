@@ -1,0 +1,6 @@
+
+=> LANG=C pour avoir le resultat en anglais / sans accent
+=> Les instances a faire apparaitre dans l'entete
+    il s'agit d'une constantea saisie
+
+    DAns get_data : prendre le nom de l'auteur et la date du rapport

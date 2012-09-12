@@ -1,0 +1,2 @@
+get_data    : la partie recup des donnees puis envoie au serveur
+rtext       : la partie pour generer du RestructuredText et tester avec html pdf odt
