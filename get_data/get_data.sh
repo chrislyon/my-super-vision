@@ -44,17 +44,18 @@ entete()
 	log "ENT-FIN"
 }
 
-## -----------
-## Le serveur
-## -----------
-serveur()
+
+##
+## Description du serveur
+##
+serveur_desc()
 {
-	log "SERVEUR-DEB"
+	log "SERVEUR_DESC-DEB"
 	echo "SERVER_NAME:" $(hostname -A)
 	echo "SERVER IP:" $(hostname -i)
 	echo "SERVER UNAME:" $(uname -a)
 	echo "SERVER RELEASE:" $(cat /etc/system-release)
-	log "SERVEUR-FIN"
+	log "SERVEUR_DESC-FIN"
 }
 
 ## -----------
@@ -63,10 +64,10 @@ serveur()
 ## -----------
 serveur_df()
 {
-	log "SERVEUR-DF-DEB"
+	log "SERVEUR_DF-DEB"
 	echo "SERVER_NAME:" $(hostname -A)
 	df -kP
-	log "SERVEUR-DF-FIN"
+	log "SERVEUR_DF-FIN"
 }
 
 ## -----------------------------
@@ -92,11 +93,13 @@ do_sql()
 	log "REQUETE-DEB"
 	echo "$ENT $req"
 	log "REQUETE-FIN"
-	log "EXE-REQUETE-DEB"
+	log "REQUETE_EXE-DEB"
 	echo "Exec => ${ORA_USER} ${SQLPLUS} ${LOGIN_BDD}@${TNS}"
-	log "EXE-REQUETE-FIN"
+	log "REQUETE_EXE-FIN"
 	## execution de la requete
+	log "DATA-DEB"
 	echo "${ENT} ${req}" | su - ${ORA_USER} -c "${SQLPLUS} -S ${LOGIN_BDD}@${TNS}"
+	log "DATA-FIN"
 	## saut de 1 ligne
 	echo
 		
@@ -196,7 +199,7 @@ big_table_SQL()
 	echo "$APPLI" | tr "/" "\n" | \
 	while read apl
 	do
-	log "BIG_TABLE-${apl}-DEB"
+	log "${apl}-DEB"
 	do_sql << EOF
 	col table_name format a30
 	col num_rows format 999999999
@@ -205,7 +208,7 @@ big_table_SQL()
 	where owner='${apl}'
 	order by 2 desc;
 EOF
-	log "BIG_TABLE-${apl}-FIN"
+	log "${apl}-FIN"
 	done
 	log "BIG_TABLE-FIN"
 }
@@ -222,6 +225,7 @@ get_DB()
 	TNS=$(echo $DATA | cut -d: -f4)
 	SQLPLUS=$(echo $DATA | cut -d: -f5)
 	APPLI=$(echo $DATA | cut -d: -f6)
+
 	#test_SQL		# Test du SQL
 	#liste_appli_SQL	# Liste des applis X3
 	big_table_SQL	# Tables dans l'ordre du nb de lignes
@@ -229,10 +233,21 @@ get_DB()
 	DB_buffer_cache_SQL
 }
 
+## --------------------------
+## traitement des serveurs
+## --------------------------
+serveurs()
+{
+	log "SERVEURS-DEB"
+	serveur_desc
+	serveur_df
+	log "SERVEURS-FIN"
+}
+
 ## =================================
 ## Traitement des bases de données
 ## =================================
-database()
+databases()
 {
 	log "DATABASES-DEB"
 	echo "$DATABASE" |\
@@ -241,8 +256,10 @@ database()
 		DB=$(echo $D | cut -d: -f1)
 		LOGIN=$(echo $D | cut -d: -f2)
 		TNS=$(echo $D | cut -d: -f3)
-		echo " => $DB / $LOGIN / $TNS "
+		#echo " => $DB / $LOGIN / $TNS "
+		log "${DB}-DEB"
 		get_DB "$D"
+		log "${DB}-FIN"
 	done
 	log "DATABASES-FIN"
 }
@@ -250,13 +267,12 @@ database()
 ## ==================
 ## GET_DATA => DEBUT
 ## ==================
-log "GET_DATA-DEB"
+log "GETDATA-DEB"
 export DATABASES=""
 get_conf
 
 entete
-serveur
-serveur_df
-database
+serveurs
+databases
 
-log "GET_DATA-FIN"
+log "GETDATA-FIN"
