@@ -4,26 +4,48 @@
 
 import os, sys
 import pprint
+
+import rtext as rst
         
 import pdb
 
 ## --------------------------------
 ## Generation de Restructured Text
 ## --------------------------------
-def gnr_rst(cles, data):
+def gnr_rst(cles, data, mode=0 ):
+
+	doc = None	# Doc courant 
+	p = None	# Page courante
+
 	for cle in cles:
 		t = eval(cle)
 		#print len(t), cle, t
 		l = len(t)
 		tabs = ' ' * (l-1)
 		if l == 1:
-			print tabs,
-			print "Entete du fichier"
+			if mode == 1:
+				print tabs,
+				print "Entete du fichier"
+			## On cree 
+			doc = rst.Fichier()
+			doc.add(rst.Entete())
 
 		## Serveur / Database
 		if l == 2:
-			print tabs,
-			print "Chapitre : %s " % t[1]
+
+			if mode == 1:
+				print tabs,
+				print "Chapitre : %s " % t[1]
+
+			if p:
+				doc.add(p)
+
+
+			p = rst.Page()
+			p.add(rst.Titre("Chapitre : %s : " % t[1]))
+
+			if t[1] == "ENT":
+				p.add( rst.Contenu("Entete : %s " % data[cle] ))
 
 		## Sections
 		## Si serveur
@@ -31,20 +53,32 @@ def gnr_rst(cles, data):
 		## Si database
 		## Alors Nom de la database
 		if l == 3:
+			section = ""
 			if t[1] == "SERVEURS":
 				if t[2] == "SERVEUR_DESC":
-					t[2] = "Description du serveur"
+					section = "Description du serveur"
 				if t[2] == "SERVEUR_DF":
-					t[2] = "Ressources Disques"
+					section = "Ressources Disques"
 
-			print tabs,
-			print "Sections : %s " % t[2]
+			p.add(rst.Section("Sections : %s : " % section ))
+			if t[2] == "SERVEUR_DF":
+				d = []
+				d.append([ "File SYstem", "Blocs de 1K", "Utilise", "Dispo", "% Occupe", "Monte sur" ])
+				for l in data[cle][2:]:
+					d.append( l.split() )
+
+				p.add(rst.Table(d))
+
+			if mode == 1:
+				print tabs,
+				print "Sections : %s " % section 
 
 		## Databases
 		## BIG_Table / DB_CACHE / TBS
 		if l == 4:
-			print tabs,
-			print "SubSections : %s " % t[3]
+			if mode == 1:
+				print tabs,
+				print "SubSections : %s " % t[3]
 
 		## Big_Table => Appli
 		## DB_CACHE => Donnees
@@ -55,16 +89,24 @@ def gnr_rst(cles, data):
 
 			if t[3] == "BIG_TABLE":
 				t[4] = " User / Application : %s " % t[4]
-			print tabs,
-			print "S-SubSections : %s " % t[4]
+
+			if mode == 1:
+				print tabs,
+				print "S-SubSections : %s " % t[4]
 
 		## Big_Table => Appli => Donnees
 		if l == 6:
+			## Les requetes c'est en cas de debug
 			if t[5].startswith('REQUETE'):
 				continue
 
-			print tabs,
-			print "S-S-SubSections : %s " % t[5]
+			if mode == 1:
+				print tabs,
+				print "S-S-SubSections : %s " % t[5]
+	else:
+		if doc:
+			print doc.render()
+		
 			
 
 
@@ -108,6 +150,6 @@ if __name__ == '__main__':
 			cles, data = lire(sys.argv[1])
 			#print pp.pprint(data)
 			#print pp.pprint(cles)
-			gnr_rst(cles, data)
+			gnr_rst(cles, data, mode=0)
 		else:
 			print "Fichier inexistant %s " % sys.argv[1]
