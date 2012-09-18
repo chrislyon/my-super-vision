@@ -57,7 +57,7 @@ class Contenu(object):
         Un contenu represente du texte
         avec un methode render => pour generer du RestructuredText
     """
-    def __init__(self, texte=""):
+    def __init__(self, texte=None):
         self.val = texte
 
     def render(self):

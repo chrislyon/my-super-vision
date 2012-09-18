@@ -30,6 +30,15 @@ def gnr_rst(cles, data, mode=0 ):
 			doc = rst.Fichier()
 			doc.add(rst.Entete())
 
+			p = rst.Page()
+			p.add( rst.Contenu( "**DOSSIER : <NOM CLIENT>**" ) )
+			p.add( rst.Contenu( "\n" ) )
+			p.add( rst.Contenu( "**Sujet : Rapport du <DATE>**" ) )
+			p.add( rst.Contenu( "\n" ) )
+			p.add( rst.Contenu( "**Rapport d'etat du systeme**" ) )
+			p.add( rst.Contenu( "\n" ) )
+
+
 		## Serveur / Database
 		if l == 2:
 
@@ -63,9 +72,11 @@ def gnr_rst(cles, data, mode=0 ):
 			p.add(rst.Section("Sections : %s : " % section ))
 			if t[2] == "SERVEUR_DF":
 				d = []
-				d.append([ "File SYstem", "Blocs de 1K", "Utilise", "Dispo", "% Occupe", "Monte sur" ])
+				d.append([ "File SYstem", "Blocs de 1K", "Utilise", "Dispo", "% Occupe" ])
+				#d.append([ "File SYstem", "Blocs de 1K", "Utilise", "Dispo", "% Occupe", "Monte sur" ])
 				for l in data[cle][2:]:
-					d.append( l.split() )
+					d_tmp = l.split()
+					d.append(  [ d_tmp[5], d_tmp[1], d_tmp[2], d_tmp[3], d_tmp[4] ] )
 
 				p.add(rst.Table(d))
 
@@ -89,6 +100,8 @@ def gnr_rst(cles, data, mode=0 ):
 
 			if t[3] == "BIG_TABLE":
 				t[4] = " User / Application : %s " % t[4]
+				if p:
+					doc.add(p)
 
 			if mode == 1:
 				print tabs,
@@ -99,6 +112,19 @@ def gnr_rst(cles, data, mode=0 ):
 			## Les requetes c'est en cas de debug
 			if t[5].startswith('REQUETE'):
 				continue
+
+			if t[5] == 'DATA':
+				#pdb.set_trace()
+				p = rst.Page()
+				p.add(rst.SubSection(" Application : %s " % t[4] ))
+				d = None
+				d = []
+				d.append(["Nom de la Table ", "Nombre de lignes"] )
+				for l in data[cle][3:13]:
+					d.append(l.split('!'))
+				pdb.set_trace()
+				p.add(rst.Table(d))
+				doc.add(p)
 
 			if mode == 1:
 				print tabs,
