@@ -57,7 +57,7 @@ class Contenu(object):
         Un contenu represente du texte
         avec un methode render => pour generer du RestructuredText
     """
-    def __init__(self, texte=None):
+    def __init__(self, texte=""):
         self.val = texte
 
     def render(self):
@@ -117,6 +117,19 @@ class SubSection(Contenu):
         r += "\n\n"
         return r
 
+class Sub2Section(Contenu):
+    """
+        Une Sous section = Titre 2+1 = 3
+    """
+
+    def render(self):
+        l = len(self.val)
+        r = ""
+        r += "%s\n" % self.val
+        r += "*" * l
+        r += "\n\n"
+        return r
+
 class Code(Contenu):
     """
         Du code non modifiable 
@@ -152,8 +165,6 @@ class Table(Contenu):
             r += ",".join(map(self.to_csv,l))
             r += "\n"
 
-        r += "\n"
-        r += "\n"
         return r
             
         
@@ -192,6 +203,10 @@ def test():
     p.add(SubSection("SousSection"))
     p.add( Contenu( "TEXTE BIDON ") )
     p.add(SubSection("SousSection"))
+    p.add( Contenu(tt1) )
+    p.add(Sub2Section("Sous2Section"))
+    p.add( Contenu(tt1) )
+    p.add(Sub2Section("Sous2Section"))
     p.add( Contenu(tt1) )
     p.add(Section("Section 3"))
     p.add( Contenu(tt2) )

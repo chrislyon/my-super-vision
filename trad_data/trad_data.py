@@ -46,12 +46,9 @@ def gnr_rst(cles, data, mode=0 ):
 				print tabs,
 				print "Chapitre : %s " % t[1]
 
-			if p:
-				doc.add(p)
-
-
 			p = rst.Page()
 			p.add(rst.Titre("Chapitre : %s : " % t[1]))
+			doc.add(p)
 
 			if t[1] == "ENT":
 				p.add( rst.Contenu("Entete : %s " % data[cle] ))
@@ -62,6 +59,7 @@ def gnr_rst(cles, data, mode=0 ):
 		## Si database
 		## Alors Nom de la database
 		if l == 3:
+			p = rst.Page()
 			section = ""
 			if t[1] == "SERVEURS":
 				if t[2] == "SERVEUR_DESC":
@@ -74,19 +72,32 @@ def gnr_rst(cles, data, mode=0 ):
 				d = []
 				d.append([ "File SYstem", "Blocs de 1K", "Utilise", "Dispo", "% Occupe" ])
 				#d.append([ "File SYstem", "Blocs de 1K", "Utilise", "Dispo", "% Occupe", "Monte sur" ])
-				for l in data[cle][2:]:
+				for l in data[cle][3:]:
 					d_tmp = l.split()
 					d.append(  [ d_tmp[5], d_tmp[1], d_tmp[2], d_tmp[3], d_tmp[4] ] )
 
 				p.add(rst.Table(d))
 
+			## Si 3 cles et DATABASES alors c'est le nom
+			if t[1] == "DATABASES":
+				p = rst.Page()
+				p.add(rst.Section("Database : %s : " % t[2] ))
+
 			if mode == 1:
 				print tabs,
 				print "Sections : %s " % section 
+			## On valide la page
+			doc.add(p)
+
 
 		## Databases
 		## BIG_Table / DB_CACHE / TBS
 		if l == 4:
+			if t[3] == "BIG_TABLE":
+				p = rst.Page()
+				p.add(rst.SubSection("Listes des 10 plus grosses tables / applications "))
+				doc.add(p)
+
 			if mode == 1:
 				print tabs,
 				print "SubSections : %s " % t[3]
@@ -94,14 +105,30 @@ def gnr_rst(cles, data, mode=0 ):
 		## Big_Table => Appli
 		## DB_CACHE => Donnees
 		## TBS => Donnees
+		## Banner => Donnees
 		if l == 5:
 			if t[4].startswith('REQUETE'):
 				continue
 
+			if t[3] == "TBS_SPACE_SQL" and t[4] == 'DATA':
+				p = rst.Page()
+				p.add(rst.SubSection("Etat des tablespaces : %s " % t[2] ))
+				d = []
+				d.append( ["TableSpace", "Alloue en Mo", "Utilise en Mo", "% Occupation"] )
+				for l in data[cle][3:]:
+					d.append(l.split('!'))
+				p.add(rst.Table(d))
+				doc.add(p)
+
+			if t[3] == "BANNER" and t[4] == 'DATA':
+				p = rst.Page()
+				p.add(rst.SubSection("Banner Database  : %s " % t[2] ))
+				for l in data[cle][3:]:
+					p.add(rst.Contenu( l ))
+				doc.add(p)
+
 			if t[3] == "BIG_TABLE":
-				t[4] = " User / Application : %s " % t[4]
-				if p:
-					doc.add(p)
+				t[4] = "User / Application : %s " % t[4]
 
 			if mode == 1:
 				print tabs,
@@ -113,16 +140,14 @@ def gnr_rst(cles, data, mode=0 ):
 			if t[5].startswith('REQUETE'):
 				continue
 
-			if t[5] == 'DATA':
-				#pdb.set_trace()
+			if t[3] == "BIG_TABLE" and t[5] == 'DATA':
 				p = rst.Page()
-				p.add(rst.SubSection(" Application : %s " % t[4] ))
+				p.add(rst.Sub2Section("Application : %s " % t[4] ))
 				d = None
 				d = []
 				d.append(["Nom de la Table ", "Nombre de lignes"] )
 				for l in data[cle][3:13]:
 					d.append(l.split('!'))
-				pdb.set_trace()
 				p.add(rst.Table(d))
 				doc.add(p)
 

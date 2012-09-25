@@ -191,6 +191,18 @@ EOF
 }
 
 ## ----------------------
+## BANNER DATABASE
+## ----------------------
+banner_SQL()
+{
+	log "BANNER-DEB"
+	do_sql << EOF
+		select banner from v\$version;
+EOF
+	log "BANNER-FIN"
+}
+
+## ----------------------
 ## Taille Table / Appli
 ## ----------------------
 big_table_SQL()
@@ -228,6 +240,7 @@ get_DB()
 
 	#test_SQL		# Test du SQL
 	#liste_appli_SQL	# Liste des applis X3
+	banner_SQL		# Bannner Version
 	big_table_SQL	# Tables dans l'ordre du nb de lignes
 	TBS_usage_SQL
 	DB_buffer_cache_SQL
