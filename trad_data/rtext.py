@@ -18,7 +18,7 @@
     Generation de fichier en restructured text
 """
 
-import sys
+import sys, os
 import pdb
 
 class Fichier(object):
@@ -75,6 +75,26 @@ class Entete(Contenu):
         r = ".. sectnum::\n\n"
         r += ".. contents:: "+self.val
         r += "\n\n"
+        return r
+
+class Image(Contenu):
+    """
+        Image permet de mettre la directive pour inserer
+        une image
+    """
+    def __init__(self, img_path = "" ):
+        if os.path.exists(img_path):
+            self.val = img_path
+            self.ok = True
+        else:
+            self.ok = False
+            self.val = "<FICHIER INEXISTANT>"
+
+    def render(self):
+        if self.ok:
+            r = ".. image:: %s \n\n" % self.val
+        else:
+            r = "<IMAGE : %s>\n\n" % self.val
         return r
 
 class Titre(Contenu):
@@ -142,13 +162,20 @@ class Code(Contenu):
         r += "\n"
         return r
 
+class Saut_Page(object):
+    def render(self):
+        r = '\n'
+        r += '.. raw:: odt\n\n'
+        r += '\t<text:p text:style-name="SAUT_PAGE"> </text:p>\n\n'
+        return r
+
 class Table(Contenu):
     """
         Contenu = un tableau
         1 ere ligne = Entete de colonne
     """
     def to_csv(self,data):
-        return '"%s"' % data
+        return '"%s"' % str(data).strip()
 
     def render(self):
         r = ""
@@ -165,7 +192,7 @@ class Table(Contenu):
             r += ",".join(map(self.to_csv,l))
             r += "\n"
 
-        return r
+        return r+'\n'
             
         
 # internal function and classes
@@ -228,10 +255,15 @@ def test():
 
         """
     p.add(Section("Section 5"))
+    p.add(Image("toto.png"))
+    p.add(Image("inexistante"))
+
+    p.add( Saut_Page() )
+    p.add(Section("Section 6"))
     p.add( Code(C1) )
 
     ## Exemple de table
-    p.add(Section("Section 4"))
+    p.add(Section("Section 7"))
     ta = [
         ( "Description ", "Qte", "Prix Unitaire", "Total" ),
         ("Produit 1", 5, 200, 5*200 ),
@@ -240,6 +272,7 @@ def test():
         ("Produit 4", 8, 220, 8*220 ),
     ]
     p.add( Table(ta) )
+    p.add( Saut_Page() )
 
 
     f.render()

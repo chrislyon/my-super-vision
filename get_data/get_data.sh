@@ -128,7 +128,7 @@ EOF
 ## ---------------------
 TBS_usage_SQL()
 {
-	log "TBS_SPACE_SQL-DEB"
+	log "TBS_SPACE-DEB"
 	do_sql << EOF
 	SELECT
 		df.tablespace_name TBS,
@@ -144,7 +144,7 @@ TBS_usage_SQL()
 	ORDER BY
 		TABLESPACE_NAME;
 EOF
-	log "TBS_SPACE_SQL-FIN"
+	log "TBS_SPACE-FIN"
 }
 
 ## ------------------
@@ -152,7 +152,7 @@ EOF
 ## ------------------
 DB_buffer_cache_SQL()
 {
-	log "DB_BUFFER_CACHE_SQL-DEB"
+	log "DB_BUFFER_CACHE-DEB"
 	do_sql << EOF
 	SELECT
 		size_for_estimate,
@@ -173,7 +173,7 @@ DB_buffer_cache_SQL()
 	AND
 		advice_status = 'ON';
 EOF
-	log "DB_BUFFER_CACHE_SQL-FIN"
+	log "DB_BUFFER_CACHE-FIN"
 }
 
 ## ----------------------
