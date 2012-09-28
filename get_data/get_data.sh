@@ -6,6 +6,7 @@
 ## Chris (2012)
 
 DJ=$(date "+%d-%m-%y %H:%M:%S")
+BASE_DIR=$(pwd)
 
 ## ---------------
 ## Routine de log
@@ -103,6 +104,26 @@ do_sql()
 	## saut de 1 ligne
 	echo
 		
+}
+
+do_sql_result_only()
+{
+	
+	ENT="
+	SET NEWPAGE 1
+	SET SPACE 0
+	SET LINESIZE 2000
+	SET PAGESIZE 5000
+	SET ECHO OFF
+	SET FEEDBACK OFF
+	SET VERIFY OFF
+	SET MARKUP HTML OFF SPOOL OFF
+	SET HEADING ON
+	SET TAB OFF
+	set colsep \"!\"
+	"
+	req=$(cat)
+	echo "${ENT} ${req}" | su - ${ORA_USER} -c "${SQLPLUS} -S ${LOGIN_BDD}@${TNS}"
 }
 
 ## ---------------------------
@@ -246,6 +267,34 @@ get_DB()
 	DB_buffer_cache_SQL
 }
 
+## -------------------------------------
+## Traitement du fichier alert_SID.log
+## -------------------------------------
+get_err_DB()
+{
+	DATA=$1
+	DB=$(echo $DATA | cut -d: -f1)
+	ORA_USER=$(echo $DATA | cut -d: -f2)
+	LOGIN_BDD=$(echo $DATA | cut -d: -f3)
+	TNS=$(echo $DATA | cut -d: -f4)
+	SQLPLUS=$(echo $DATA | cut -d: -f5)
+
+	log "ERR_ORA-DEB"
+    REQ="select 'DUMP_FILE='||value from v\$parameter where name = 'user_dump_dest';"
+    fichier=$(echo "$REQ" | do_sql_result_only | grep DUMP_FILE | tail -1)
+    fichier=$(echo $fichier | cut -d'=' -f2)
+    log "Errfile = [$fichier] "
+    REQ="select 'SID='||instance_name from v\$instance;"
+    INST_SID=$(echo "$REQ" | do_sql_result_only | grep SID | tail -1)
+    INST_SID=$(echo $INST_SID | cut -d'=' -f2)
+    log "INST_SID = [$INST_SID] "
+    alert_file=${fichier}/alert_${INST_SID}.log
+    nb_lig=$(wc -l $alert_file 2>/dev/null )
+    log "alert = [$alert_file] / ${nb_lig} ligne(s)"
+    $BASE_DIR/t_err_ora $alert_file
+	log "ERR_ORA-FIN"
+}
+
 ## --------------------------
 ## traitement des serveurs
 ## --------------------------
@@ -271,7 +320,8 @@ databases()
 		TNS=$(echo $D | cut -d: -f3)
 		#echo " => $DB / $LOGIN / $TNS "
 		log "${DB}-DEB"
-		get_DB "$D"
+		#get_DB "$D"
+        get_err_DB "$D"
 		log "${DB}-FIN"
 	done
 	log "DATABASES-FIN"
